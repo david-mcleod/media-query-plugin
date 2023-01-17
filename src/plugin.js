@@ -240,8 +240,7 @@ module.exports = class MediaQueryPlugin {
             try {
                 const htmlWebpackPlugin = require('html-webpack-plugin');
 
-                compilation.hooks.afterOptimizeChunkAssets.tap(pluginName, (chunks) => {
-
+                const afterOptimizeChunkAssets = (chunks) => {
                     const hookFn = (pluginArgs, cb) => {
                         const assetJson = [];
                         const extracted = {};
@@ -273,7 +272,15 @@ module.exports = class MediaQueryPlugin {
                     } else if (compilation.hooks.htmlWebpackPluginBeforeHtmlGeneration) {
                         compilation.hooks.htmlWebpackPluginBeforeHtmlGeneration.tapAsync(pluginName, hookFn);
                     }
-                });
+                };
+
+                const stage = Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_1;
+
+                compilation.hooks.processAssets.tap(
+                    { name: pluginName, stage },
+                    afterOptimizeChunkAssets
+                );
+
             } catch (err) {
                 if (err.code !== 'MODULE_NOT_FOUND') {
                     throw err;
